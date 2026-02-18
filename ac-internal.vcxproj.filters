@@ -23,5 +23,8 @@
     <ClInclude Include="util\offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="util\memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

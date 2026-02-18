@@ -1,14 +1,12 @@
-#include <Windows.h>
+#include "util/memory.h"
 #include "util/offsets.h"
 
 void injected_thread() {
+	Memory memory = Memory();
 	while (true) {
 		if (GetAsyncKeyState('M')) {
-			uintptr_t baseAddress = (uintptr_t)GetModuleHandle(NULL);
-			uintptr_t localPlayer = baseAddress + LOCAL_PLAYER_OFFSET;
-			uintptr_t playerAddress = *(uintptr_t*)localPlayer;
-			uintptr_t* health = (uintptr_t*)(playerAddress + HEALTH_OFFSET);
-			*health = 100;
+			uintptr_t localPlayer = memory.Read(LOCAL_PLAYER_OFFSET);
+			memory.Write(localPlayer + HEALTH_OFFSET, 69);
 		}
 
 		Sleep(100);
