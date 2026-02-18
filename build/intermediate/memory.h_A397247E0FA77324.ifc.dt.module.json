@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "C:\\Users\\Alvaro\\Documents\\Projects\\ac-internal\\build\\intermediate\\memory.obj",
+            "outputs": [
+                "C:\\Users\\Alvaro\\Documents\\Projects\\ac-internal\\build\\intermediate\\memory.h_A397247E0FA77324.ifc.dt.module.json",
+                "C:\\Users\\Alvaro\\Documents\\Projects\\ac-internal\\build\\intermediate\\memory.h_A397247E0FA77324.ifc.dt.d.json",
+                "C:\\Users\\Alvaro\\Documents\\Projects\\ac-internal\\build\\intermediate\\memory.h.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "C:\\Users\\Alvaro\\Documents\\Projects\\ac-internal\\memory.h",
+                    "source-path": "c:\\users\\alvaro\\documents\\projects\\ac-internal\\memory.h",
+                    "lookup-method": "absolute"
+                }
+            ],
+            "requires": []
+        }
+    ]
+}
