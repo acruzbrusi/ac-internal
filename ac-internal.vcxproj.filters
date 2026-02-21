@@ -18,18 +18,15 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\trainer.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="util\memory.h">
+    <ClInclude Include="src\menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\menu.h">
+    <ClInclude Include="src\player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

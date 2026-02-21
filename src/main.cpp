@@ -1,9 +1,9 @@
-#include "trainer.h"
+#include "../util/offsets.h"
+#include "player.h"
 #include "menu.h"
 
 #include <cstdio>
 
-Trainer trainer;
 Menu menu;
 
 DWORD ret_address = 0x0040BE83;
@@ -49,14 +49,20 @@ __declspec(naked) void codecave() {
 	}
 }
 
+
+Player* player;
 void injected_thread() {
-	trainer = Trainer();
 	menu = Menu();
+
+	uintptr_t baseAddress = (uintptr_t)GetModuleHandle(NULL);
+	player = (Player*)(*(uintptr_t*)(baseAddress + LOCAL_PLAYER_OFFSET));
+
 	while (true) {
-		if (menu.item_enabled[HEALTH]) { trainer.SetHealth(999); }
-		if (menu.item_enabled[PRIMARY_AMMO]) { trainer.SetPrimaryAmmo(999); }
-		if (menu.item_enabled[SECONDARY_AMMO]) { trainer.SetSecondaryAmmo(999); }
-		if (menu.item_enabled[ARMOR]) { trainer.SetArmor(999); }
+		
+		if (menu.item_enabled[HEALTH]) { player->health = 999; }
+		if (menu.item_enabled[PRIMARY_AMMO]) { player->primaryAmmo = 99; }
+		if (menu.item_enabled[SECONDARY_AMMO]) { player->secondaryAmmo = 99; }
+		if (menu.item_enabled[ARMOR]) { player->armor = 99; }
 
 		menu.handle_input();
 
