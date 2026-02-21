@@ -26,7 +26,7 @@ void print_text(DWORD x, DWORD y, const char* text) {
 	}
 }
 
-__declspec(naked) void codecave() {
+__declspec(naked) void print_codecave() {
 
 	// recreate speed print with empty text
 	__asm {
@@ -49,6 +49,26 @@ __declspec(naked) void codecave() {
 	}
 }
 
+bool no_recoil_enabled = false;
+void toggle_no_recoil() {
+	DWORD recoil_old_protect;
+	unsigned char* recoil_hook_location = (unsigned char*)0x45BAAD;
+
+	VirtualProtect((void*)recoil_hook_location, 3, PAGE_EXECUTE_READWRITE, &recoil_old_protect);
+	if (no_recoil_enabled) {
+		*(recoil_hook_location) = 0xD9;
+		*(recoil_hook_location + 1) = 0x5B;
+		*(recoil_hook_location + 2) = 0x44;
+		no_recoil_enabled = false;
+	}
+	else {
+		*(recoil_hook_location) = 0xDD;
+		*(recoil_hook_location + 1) = 0xD8;
+		*(recoil_hook_location + 2) = 0x90;
+		no_recoil_enabled = true;
+	}
+}
+
 
 Player* player;
 void injected_thread() {
@@ -63,6 +83,7 @@ void injected_thread() {
 		if (menu.item_enabled[PRIMARY_AMMO]) { player->primaryAmmo = 99; }
 		if (menu.item_enabled[SECONDARY_AMMO]) { player->secondaryAmmo = 99; }
 		if (menu.item_enabled[ARMOR]) { player->armor = 99; }
+		if (menu.item_enabled[NO_RECOIL] != no_recoil_enabled) { toggle_no_recoil(); }
 
 		menu.handle_input();
 
@@ -72,15 +93,17 @@ void injected_thread() {
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 
-	DWORD old_protect;
-	unsigned char* hook_location = (unsigned char*)0x0040BE7E; // draw showspeed call location
+	DWORD print_old_protect;
+	unsigned char* print_hook_location = (unsigned char*)0x0040BE7E; // draw showspeed call location
+
+
 
 	if (fdwReason == DLL_PROCESS_ATTACH) {
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)injected_thread, NULL, 0, NULL);
 
-		VirtualProtect((void*)hook_location, 5, PAGE_EXECUTE_READWRITE, &old_protect);
-		*hook_location = 0xE9; // relative JMP at hook location
-		*(DWORD*)(hook_location + 1) = (DWORD)&codecave - ((DWORD)hook_location + 5);
+		VirtualProtect((void*)print_hook_location, 5, PAGE_EXECUTE_READWRITE, &print_old_protect);
+		*print_hook_location = 0xE9; // relative JMP at hook location
+		*(DWORD*)(print_hook_location + 1) = (DWORD)&print_codecave - ((DWORD)print_hook_location + 5);
 		// relative JMP needs a 4-byte offset
 		// offset = destination - (current_address + 5)
 		// +5 is accounting for size of JMP (opcode + 4-byte offset)
