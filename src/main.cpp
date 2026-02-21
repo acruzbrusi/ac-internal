@@ -1,42 +1,73 @@
 #include "trainer.h"
+#include "menu.h"
 
 #include <cstdio>
 
-static char text[32];
-void injected_thread() {
-	Trainer trainer = Trainer();
-	while (true) {
-		trainer.SetHealth(999);
-		trainer.SetPrimaryAmmo(999);
-		trainer.SetSecondaryAmmo(999);
-		trainer.SetArmor(999);
+Trainer trainer;
+Menu menu;
 
-		snprintf(text, sizeof(text), "Health: %.2f", (double)trainer.GetHealth());
+DWORD ret_address = 0x0040BE83;
+DWORD print_address = 0x419880; // address of print subroutine
 
-		Sleep(100);
+const char* empty_text = "";
+static char debugText[4][32];
+const char* text = "";
+
+DWORD x;
+DWORD y;
+
+void print_text(DWORD x, DWORD y, const char* text) {
+	__asm {
+		mov ecx, text
+		push y
+		push x
+		call print_address
+		add esp, 8 // balance stack
 	}
 }
 
-DWORD ret_address = 0x0040BE7E; // return at subroutine call
-
-DWORD x = 0x100;
-DWORD y = 0x100;
-
 __declspec(naked) void codecave() {
 
+	// recreate speed print with empty text
 	__asm {
-		mov ecx, offset text
-		push y
-		push x
+		mov ecx, empty_text
+		call print_address
+		pushad
+	}
+	
+	// draw menu loop
+	print_text(10, 50 + (100 * menu.cursor_position), menu.cursor);
+	for (int i = 0; i < MAX_ITEMS; i++) {
+		print_text(50, 50 + (100 * i), menu.items[i]);
+		print_text(500, 50 + (100 * i), menu.get_state(i));
+	}
+
+
+	__asm {
+		popad
 		jmp ret_address
 	}
 }
 
+void injected_thread() {
+	trainer = Trainer();
+	menu = Menu();
+	while (true) {
+		if (menu.item_enabled[HEALTH]) { trainer.SetHealth(999); }
+		if (menu.item_enabled[PRIMARY_AMMO]) { trainer.SetPrimaryAmmo(999); }
+		if (menu.item_enabled[SECONDARY_AMMO]) { trainer.SetSecondaryAmmo(999); }
+		if (menu.item_enabled[ARMOR]) { trainer.SetArmor(999); }
+
+		menu.handle_input();
+
+		Sleep(1);
+	}
+}
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 
 	DWORD old_protect;
-	unsigned char* hook_location = (unsigned char*)0x0040BE78;
+	unsigned char* hook_location = (unsigned char*)0x0040BE7E; // draw showspeed call location
 
 	if (fdwReason == DLL_PROCESS_ATTACH) {
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)injected_thread, NULL, 0, NULL);
@@ -47,12 +78,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 		// relative JMP needs a 4-byte offset
 		// offset = destination - (current_address + 5)
 		// +5 is accounting for size of JMP (opcode + 4-byte offset)
-
-		// push 708
-		// push eax
-		// ^ 6 bytes
-		// so pad last byte with NOP
-		*(hook_location + 5) = 0x90;
+		// replacing call instruction (also 5 bytes) so don't need to pad
 	}
 
 	return true;
