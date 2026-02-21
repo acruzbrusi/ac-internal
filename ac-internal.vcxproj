@@ -128,7 +128,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\trainer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util\memory.h" />
